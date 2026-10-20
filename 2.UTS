@@ -1,0 +1,33 @@
+1. CREATE (INSERT)
+
+TABEL users
+INSERT INTO users (name, email) VALUES
+('Andi Permana', 'andi@example.com'),
+('Heksa Abdillah', 'heksa@example.com'),
+('Rina Setiowati', 'rina@example.com');
+
+TABEL artikel
+INSERT INTO artikel (category_id, title, published_at, status) VALUES
+(1, 'Perkembangan Kecerdasan Buatan', '2026-10-10 09:00:00', 'published'),
+(2, 'Pemanfaatan Teknologi dalam Pendidikan', '2026-10-11 10:30:00', 'published'),
+(3, 'Peluang Usaha di Era Digital', NULL, 'draft');
+
+TABEL artikel_penulis
+INSERT INTO artikel_penulis (article_id, user_id, peran_penulis) VALUES
+(1, 1, 'Penulis utama'),
+(1, 2, 'Editor artikel'),
+(2, 1, 'Penulis utama'),
+(2, 2, 'Editor artikel'),
+(3, 3, 'Penulis utama');
+
+2. READ (MENAMPILKAN)
+SELECT * users
+
+3. UPDATE (UBAH NILAI SATU DATA)
+UPDATE artikel_penulis 
+SET peran_penulis = 'Senior Editor' 
+WHERE article_id = 1 AND user_id = 2;
+
+4. DELETE (MENGHAPUS SATU BARIS DATA DUMMY)
+DELETE FROM artikel_penulis 
+WHERE article_id = 3 AND user_id = 3;
