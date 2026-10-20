@@ -1,0 +1,16 @@
+1. SATU PERINTAH SQL MENGGABUNGKAN 4 KOMPONEN
+SELECT 
+    users.name AS nama_penulis, 
+    COUNT(artikel_penulis.article_id) AS total_artikel
+FROM users
+JOIN artikel_penulis ON users.user_id = artikel_penulis.user_id
+WHERE artikel_penulis.peran_penulis = 'Penulis utama'
+GROUP BY users.name;
+
+HASILNYA
+________________________________
+|nama_penulis   | total_artikel|
+--------------------------------
+|Andi Permana   | 2            | 
+|Rina Setiowati | 1            |
+--------------------------------
