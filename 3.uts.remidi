@@ -1,0 +1,110 @@
+
+1. PEMBUATAN DATABASE
+CREATE DATABASE IF NOT EXISTS portal_berita;
+USE portal_berita;
+
+2. TABEL INDUK (PARENT TABLES)
+ Tabel Induk: kategori
+CREATE TABLE kategori (
+    category_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+ Tabel Induk / Supertype: users
+CREATE TABLE users (
+    user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE
+);
+
+Tabel Induk: tag
+CREATE TABLE tag (
+    tag_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+3. TABEL SUBTYPE (SPESIALISASI)
+ Subtype: reporter (Mewarisi user_id dari users)
+CREATE TABLE reporter (
+    user_id INT UNSIGNED PRIMARY KEY,
+    bidang_liputan VARCHAR(100) NOT NULL,
+    CONSTRAINT fk_reporter_users FOREIGN KEY (user_id) 
+        REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+ Subtype: editor (Mewarisi user_id dari users)
+CREATE TABLE editor (
+    user_id INT UNSIGNED PRIMARY KEY,
+    level_editor VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_editor_users FOREIGN KEY (user_id) 
+        REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+4. TABEL UTAMA DENGAN FOREIGN KEY
+ Tabel Utama: artikel
+CREATE TABLE artikel (
+    article_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    category_id INT UNSIGNED NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    published_at DATETIME NULL,
+    status ENUM('draft', 'published', 'archived') DEFAULT 'draft' NOT NULL,
+    CONSTRAINT fk_artikel_kategori FOREIGN KEY (category_id) 
+        REFERENCES kategori(category_id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
+5. TABEL TRANSAKSI / ASOSIATIF (RELASI MANY-TO-MANY)
+Tabel Transaksi: artikel_penulis (M:N antara artikel dan users)
+CREATE TABLE artikel_penulis (
+    article_id INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    peran_penulis VARCHAR(50) NOT NULL,
+    PRIMARY KEY (article_id, user_id),
+    CONSTRAINT fk_artikel_penulis_artikel FOREIGN KEY (article_id) 
+        REFERENCES artikel(article_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_artikel_penulis_users FOREIGN KEY (user_id) 
+        REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+ Tabel Transaksi: artikel_tag (M:N antara artikel dan tag)
+CREATE TABLE artikel_tag (
+    article_id INT UNSIGNED NOT NULL,
+    tag_id INT UNSIGNED NOT NULL,
+    PRIMARY KEY (article_id, tag_id),
+    CONSTRAINT fk_artikel_tag_artikel FOREIGN KEY (article_id) 
+        REFERENCES artikel(article_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_artikel_tag_tag FOREIGN KEY (tag_id) 
+        REFERENCES tag(tag_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+ Tabel Anak: komentar (1:N dari artikel)
+CREATE TABLE komentar (
+    comment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    article_id INT UNSIGNED NOT NULL,
+    nama_pengirim VARCHAR(100) NOT NULL,
+    isi_komentar TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT fk_komentar_artikel FOREIGN KEY (article_id) 
+        REFERENCES artikel(article_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+Penjelasan Constraint & Aturan Validasi
+1. Primary Key (PK):
+
+Menggunakan AUTO_INCREMENT pada seluruh tabel induk (category_id, user_id, tag_id, article_id, comment_id) untuk menjamin keunikan identitas data secara otomatis.
+
+Menggunakan Composite Primary Key pada tabel artikel_penulis (article_id, user_id) 
+dan artikel_tag (article_id, tag_id) agar tidak terjadi penugasan ganda yang identik pada baris yang sama.
+
+2. Foreign Key (FK) & Referential Integrity:
+
+ON DELETE CASCADE ON UPDATE CASCADE diterapkan pada tabel artikel_penulis, artikel_tag, komentar, reporter, dan editor. Jika data induk diubah/dihapus, data turunan secara otomatis menyesuaikan atau terhapus.
+ON DELETE RESTRICT diterapkan pada fk_artikel_kategori untuk mencegah penghapusan data kategori jika masih ada artikel yang terikat pada kategori tersebut.
+
+3. Domain & Data Validation Constraint:
+
+ENUM('draft', 'published', 'archived'): Membatasi isian status artikel hanya pada 3 opsi valid tersebut.
+UNIQUE: Memastikan email pada users serta nama pada kategori dan tag tidak boleh duplikat.
+DEFAULT 'draft': Menetapkan status awal artikel otomatis menjadi draft jika tidak diisi secara eksplisit.
+DEFAULT CURRENT_TIMESTAMP: Memastikan stempel waktu pada komentar otomatis tercatat saat data dimasukkan.
