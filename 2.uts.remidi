@@ -1,0 +1,83 @@
+2. Pemodelan Logis (Skema Relasional & Normalisasi 1NF hingga 3NF)
+A. Skema Relasional (Relational Schema)
+Transformasi dari pemodelan konseptual (ERD) proyek CMS Portal Berita menghasilkan skema relasional berikut:
+
+1. users (user_id, name, email, role)
+2. kategori (category_id, name)
+3. artikel (article_id, category_id, title, published_at, status)
+  Foreign Key: category_id rightarrow kategori.category_id
+4. artikel_penulis (article_id, user_id, peran_penulis)
+  Foreign Key 1: article_id rightarrow artikel.article_id
+  Foreign Key 2: user_id rightarrow users.user_id
+5. tag (tag_id, name)
+6. artikel_tag (article_id, tag_id)
+  Foreign Key 1: article_id rightarrow artikel.article_id
+  Foreign Key 2: tag_id rightarrow tag.tag_id
+7. komentar (comment_id, article_id, nama_pengirim, isi_komentar, created_at)
+  Foreign Key: article_id rightarrow artikel.article_id
+8. reporter (user_id, bidang_liputan)
+  Primary Key / Foreign Key: user_id rightarrow users.user_id
+9. editor (user_id, level_editor)
+  Primary Key / Foreign Key: user_id rightarrow users.user_id
+(Keterangan: Garis bawah menandai Primary Key / Composite Primary Key).
+
+B. Tahapan Normalisasi (UNF Hingga 3NF)
+1. Unnormalized Form (UNF)
+Kondisi awal data sistem CMS dicatat dalam satu bentuk formulir laporan yang belum terstruktur dan mengandung repeating groups (kelompok data berulang):
+{UNF} = [article_id, title, category_name, published_at, status, user_id, user_name, user_email, peran_penulis, bidang_liputan level_editor], [tag_id, tag_name], [comment_id, nama_pengirim, isi_komentar]
+
+2. Bentuk Normal Pertama (1NF)
+Syarat 1NF: Menghilangkan repeating groups sehingga setiap atribut berisi nilai tunggal (atomic value) dan menentukan Composite Primary Key awal.
+
+UNF_FLAT (article_id, user_id, tag_id, comment_id, title, category_name, published_at, status, user_name, user_email, peran_penulis, tag_name, nama_pengirim, isi_komentar)
+
+3. Bentuk Normal Kedua (2NF)
+Syarat 2NF: Memenuhi 1NF dan menghilangkan Ketergantungan Parsial (Partial Dependency). Setiap atribut non-PK harus bergantung secara penuh (fully functionally dependent) pada seluruh komponen Primary Key.
+
+Memisahkan entitas yang hanya bergantung pada sebagian kunci utama:
+ARTIKEL (article_id, title, category_name, published_at, status)
+USERS (user_id, user_name, user_email)
+TAG (tag_id, tag_name)
+KOMENTAR (comment_id, article_id, nama_pengirim, isi_komentar)
+ARTIKEL_PENULIS (article_id, user_id, peran_penulis)
+ARTIKEL_TAG (article_id, tag_id)
+
+4. Bentuk Normal Ketiga (3NF)
+Syarat 3NF: Memenuhi 2NF dan menghilangkan Ketergantungan Transitif (Transitive Dependency). Atribut non-PK tidak boleh bergantung pada atribut non-PK lainnya.
+Pada relasi ARTIKEL, atribut category_name tidak bergantung langsung pada article_id, 
+melainkan melalui category_id (article_id -> rightarrow -> category_id -> rightarrow -> category_name) 
+Begitu pula dengan spesialisasi entitas USERS untuk memisahkan atribut khusus reporter dan editor guna menghapus nilai NULL.
+
+Hasil Akhir Tabel 3NF:
+  KATEGORI (category_id, name)
+  ARTIKEL (article_id, category_id, title, published_at, status)
+  USERS (user_id, name, email)
+  REPORTER (user_id, bidang_liputan)
+  EDITOR (user_id, level_editor)
+  ARTIKEL_PENULIS (article_id, user_id, peran_penulis)
+  TAG (tag_id, name)
+  ARTIKEL_TAG (article_id, tag_id)
+  KOMENTAR (comment_id, article_id, nama_pengirim, isi_komentar)
+Seluruh tabel pada 3NF ini sudah bebas dari anomali insersi (insert), pembaruan (update), maupun penghapusan (delete).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
